@@ -89,7 +89,7 @@ ITEM_PIPELINES = {
 #HTTPCACHE_IGNORE_HTTP_CODES = []
 #HTTPCACHE_STORAGE = 'scrapy.extensions.httpcache.FilesystemCacheStorage'
 # IMAGES_STORE = '/Users/lolorodriguez/Documents/DL_11785/project/data_collection/scrapy_designboom/output'
-IMAGES_STORE = '/Users/manuelr/Documents/ACC_DATA_COLLECTION/images_main'
+IMAGES_STORE = '/Users/manuelr/Documents/ACC_DATA_COLLECTION/images_architecture'
 # IMAGE_MAIN_STORE = '/Users/manuelr/Documents/ACC_DATA_COLLECTION/images_main'
 # IMAGE_EXTRA_STORE = '/Users/manuelr/Documents/ACC_DATA_COLLECTION/images_extra'
 

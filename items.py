@@ -24,6 +24,7 @@ class ScrapyDesignboomItem(scrapy.Item):
     title = scrapy.Field()
 
 
+
 # to use other naming! Not really necessary
 # IMAGES_URLS_FIELD = 'image_urls'
 # IMAGES_RESULT_FIELD = 'images'
