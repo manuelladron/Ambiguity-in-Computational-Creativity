@@ -1,4 +1,4 @@
-import pdb, sys, os
+import pdb, sys, os, io
 from html.parser import HTMLParser
 import json
 import unicodedata
@@ -29,12 +29,16 @@ class Utils(object):
     def run(self):
         raise NotImplementedError
 
+    def load_output(self):
+        return json.loads(self.json)
+
     def load_json(self, file_path):
         with open(file_path) as f:
             data = json.load(f)
         return data
 
     def save_json(self, file_path, data):
+        data = json.dumps(data, ensure_ascii=False)
         with open(file_path, 'w') as json_file:
             json.dump(data, json_file)
 
