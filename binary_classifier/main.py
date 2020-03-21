@@ -23,6 +23,8 @@ class PreprocessedData(object):
         self.folder_path = folder_path
         self.train_dataset = None
         self.test_dataset = None
+        self.vocab = []
+        self.word_2_index = dict()
 
     def make_train_test(self):
         pass
@@ -62,8 +64,6 @@ class classifier(nn.Module):
     #define all the layers used in model
     def __init__(self, vocab_size, embedding_dim, hidden_dim, output_dim, n_layers,
                  bidirectional, dropout):
-
-        #Constructor
         super(classifier).__init__()
 
         #embedding layer
@@ -188,7 +188,7 @@ def main():
     dataset = PreprocessedData(folder_path)
 
     # Define hyperparameters
-    size_of_vocab = len(TEXT.vocab)
+    size_of_vocab = len(dataset.vocab)
     embedding_dim = 100
     num_hidden_nodes = 32
     num_output_nodes = 1
@@ -213,6 +213,7 @@ def main():
 
     train_losses, train_accs = [], []
     test_losses, test_accs = [], []
+    epochs = []
     for e in range(nepochs):
         # Train
         train_loss, train_acc = train(train_loader, model, criterion, optimizer)
@@ -222,7 +223,8 @@ def main():
         test_loss, test_acc = test(test_loader, model, criterion)
         test_losses.append(test_loss)
         test_accs.append(test_acc)
-        # Print every 10 epochs
+        # Epochs
+        epochs.append(e)
         if e % 10 == 0 and e != 0:
             print('Epoch: ', e)
             print('Training Loss: ', train_loss)
