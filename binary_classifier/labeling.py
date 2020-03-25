@@ -53,13 +53,20 @@ def timerFired(data):
 
 def redrawAll(canvas, data):
     image_size = len(data.example['images'])
+    base_height = int(data.height / image_size)
+
     data.imgs = []
     for index, image_name in enumerate(data.example['images']):
         name = './design/' + image_name
-        image = ImageTk.PhotoImage(Image.open(name))
-        data.imgs.append(image)
+        image = Image.open(name)
 
-        canvas.create_image(540, index*100, image=image)
+        h_percent = (base_height/float(image.size[1]))
+        wsize = int((float(image.size[0])*float(h_percent)))
+        image = image.resize((base_height, wsize), Image.ANTIALIAS)
+        image = ImageTk.PhotoImage(image)
+
+        data.imgs.append(image)
+        canvas.create_image(540, index*base_height, anchor=NW, image=image)
 
 ####################################
 # use the run function as-is
