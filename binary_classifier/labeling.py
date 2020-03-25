@@ -5,6 +5,7 @@ import pdb, sys, os, io
 # Barebones timer, mouse, and keyboard events
 
 from tkinter import *
+from PIL import ImageTk, Image
 
 ####################################
 # customize these functions
@@ -17,19 +18,23 @@ def init(data):
     get_next_item(data)
 
 def get_next_item(data):
-    u = Utils()
-
     with open(data.file_path) as f:
         output = json.loads(json.load(f))
 
     for example in output:
         # if there aren't any images, or any text, or the title has already been seen,
         # ignore it
-        if len(example['images']) > 0 and len(example['text']) > 0 and
-           example['title'] not in data.titlesSeen:
+        if (len(example['images']) > 0 and len(example['text']) > 0 and
+           example['title'] not in data.titlesSeen):
+            print(example)
             # List the text by parts on one side, list the images on the other.
-            pdb.set_trace()
+            data.example = example
+            # for index, image_name in enumerate(data.example['images']):
+            #     name = 'design/' + image_name
+            #     print(name)
+                # data.example[index] = PhotoImage(file=name)
 
+            break
             # 1) Write to new seen list
             # 2) Save sentences and images to new json, with label
             # u.save_json(new_file_name, data)
@@ -47,8 +52,14 @@ def timerFired(data):
     pass
 
 def redrawAll(canvas, data):
-    # draw in canvas
-    pass
+    image_size = len(data.example['images'])
+    data.imgs = []
+    for index, image_name in enumerate(data.example['images']):
+        name = './design/' + image_name
+        image = ImageTk.PhotoImage(Image.open(name))
+        data.imgs.append(image)
+
+        canvas.create_image(540, index*100, image=image)
 
 ####################################
 # use the run function as-is
