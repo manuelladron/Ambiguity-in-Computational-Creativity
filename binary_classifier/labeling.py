@@ -20,6 +20,32 @@ Returns true is anyimage is selected
 def isImageSelected(data):
     return len(data.new_images) != 0
 
+'''
+Sets data.isPromptOpen and data.prompt for different cases of [space] press
+'''
+def isExampleCompleteChecks(data):
+    nothingSelected = 'Selecting nothing will remove this example from the data.\n[space] to continue.\n[backspace] go back and fix.'
+    if data.isPromptOpen == True and data.prompt == nothingSelected:
+        data.isPromptOpen = False
+        return
+
+    elif len(data.new_images) == 0 and len(data.new_letters) != 0:
+        data.prompt = 'You have text selected but no images.\n[backspace] go back and fix.'
+        data.isPromptOpen = True
+        return
+
+    elif len(data.new_letters) == 0 and len(data.new_images) != 0:
+        data.prompt = 'You have images selected but not text.\n[backspace] go back and fix.'
+        data.isPromptOpen = True
+        return
+
+    elif len(data.new_images) == 0 and len(data.new_letters) == 0:
+        data.prompt = nothingSelected
+        data.isPromptOpen = True
+        return
+
+    data.isPromptOpen = False
+
 def init(data):
     data.file_path = './data/design_dz-cleaned.json'
     data.titlesSeen = set()
@@ -27,6 +53,9 @@ def init(data):
 
     data.new_letters = []
     data.new_images = []
+
+    data.isPromptOpen = False
+    data.prompt = None
 
     data.example = None
     data.output = None
@@ -62,9 +91,12 @@ def save_item(data):
     pass
 
 def keyPressed(event, data):
+    print(event.keysym)
     # If an element is already active, remove it by pressing the key again
-    if event.keysym in data.new_letters or event.keysym in data.new_images:
-        data.new_data.remove(event.keysym)
+    if event.keysym in data.new_letters:
+        data.new_letters.remove(event.keysym)
+    elif event.keysym in data.new_images:
+        data.new_images.remove(event.keysym)
 
     # Add an element to the list of saved items
     elif event.keysym in NUMBERS:
@@ -76,9 +108,11 @@ def keyPressed(event, data):
 
     # TODO: Save an item
     elif event.keysym == 'space':
-        data.new_images = []
-        data.new_letters = []
-        get_next_item(data)
+        isExampleCompleteChecks(data)
+        if data.isPromptOpen == False:
+            data.new_images = []
+            data.new_letters = []
+            get_next_item(data)
 
     # Select/ Deselect all images
     elif event.keysym == 'q':
@@ -95,8 +129,12 @@ def keyPressed(event, data):
             data.new_images = [NUMBERS[i] for i in range(len(data.example['images']))]
 
     # TODO: Revert to a previous item
-    elif event.keysym == 'backspace':
-        pass
+    elif event.keysym == 'BackSpace':
+        if data.isPromptOpen:
+            data.isPromptOpen = False
+        else:
+            # TODO: go back
+            print(event.keysym)
 
 def timerFired(data):
     pass
@@ -109,20 +147,19 @@ def drawImages(canvas, data):
 
     data.imgs = []
     for index, image_name in enumerate(data.example['images']):
+        # Get and draw image
         name = './design/' + image_name
         image = Image.open(name)
-
         h_percent = (base_height/float(image.size[0]))
         wsize = int((float(image.size[0])*float(h_percent)))
         image = image.resize((base_height, wsize), Image.ANTIALIAS)
         image = ImageTk.PhotoImage(image)
-
         data.imgs.append(image)
         canvas.create_image(image_left, index*base_height, anchor=NW, image=image)
-        if str(index) in data.new_images:
-            canvas.create_text(image_left - 60, index*base_height, text='Active:'+str(index)+'.', font="Arial 14 bold", anchor=NW)
-        else:
-            canvas.create_text(image_left - 20, index*base_height, text=str(index)+'.', font="Arial 14 bold", anchor=NW)
+
+        # Get and draw text
+        text = 'Active: '+str(index) if str(index) in data.new_images else str(index)
+        canvas.create_text(image_left - 5, index*base_height + 10, text=text, font="Arial 14", anchor=NE)
 
 def drawSentences(canvas, data):
     t = ''
@@ -150,16 +187,25 @@ def drawDirections(canvas, data):
     canvas.create_text(10, data.height - 60, text=select_images, font="Arial 14", anchor=NW)
 
     # Save
+    save_text = '[space] Save an example and continue'
+    canvas.create_text(10, data.height - 40, text=save_text, font="Arial 14", anchor=NW)
 
     # Back
+    back_text = '[backspace] Go back one example'
+    canvas.create_text(10, data.height - 20, text=back_text, font="Arial 14", anchor=NW)
 
-
-    pass
+def drawPrompt(canvas, data):
+    if data.isPromptOpen:
+        left, top = data.width // 3, data.height // 3
+        color = "#%02x%02x%02x" % (210, 245, 255)
+        canvas.create_rectangle(left - 10, top, 2 * data.width // 3 + 20, 2 * data.height // 3, fill=color)
+        canvas.create_text(data.width//2, data.height //2, text=data.prompt, font="Arial 14",)
 
 def redrawAll(canvas, data):
     drawImages(canvas, data)
     drawSentences(canvas, data)
     drawDirections(canvas, data)
+    drawPrompt(canvas, data)
 
 ####################################
 # use the run function as-is
