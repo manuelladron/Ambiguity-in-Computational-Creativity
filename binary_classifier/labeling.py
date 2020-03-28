@@ -74,8 +74,7 @@ def isExampleCompleteChecks(data):
 #########################################################
 
 def init(data):
-    data.file_path = './data/design_dz-cleaned.json'
-    data.file_path_tagged = './data/design_dz-cleaned-tagged.json'
+    data.file_path_tagged = '%s-tagged' % data.file_path.split('.json')[0] + '.json'
     data.u = Utils()
 
     data.new_letters = []
@@ -200,7 +199,7 @@ def drawImages(canvas, data):
     data.imgs = []
     for index, image_name in enumerate(data.examples[data.i]['images']):
         # Get and draw image
-        name = './design/' + image_name
+        name = data.image_folder_path + image_name
         image = Image.open(name)
         h_percent = (base_height/float(image.size[0]))
         wsize = int((float(image.size[0])*float(h_percent)))
@@ -274,7 +273,7 @@ def timerFired(data):
 # use the run function as-is
 ####################################
 
-def run(width=300, height=300):
+def run(width, height, file_path, folder_path):
     def redrawAllWrapper(canvas, data):
         canvas.delete(ALL)
         canvas.create_rectangle(0, 0, data.width, data.height,
@@ -299,10 +298,15 @@ def run(width=300, height=300):
     # Set up data and call init
     class Struct(object): pass
     data = Struct()
+
     data.width = width
     data.height = height
+    data.file_path = file_path
+    data.image_folder_path = folder_path
+
     data.timerDelay = 100 # milliseconds
     init(data)
+
     # create the root and the canvas
     root = Tk()
     canvas = Canvas(root, width=data.width, height=data.height)
@@ -317,6 +321,16 @@ def run(width=300, height=300):
     root.mainloop()  # blocks until window is closed
     print("bye!")
 
-
-run(1080, 720)
+if __name__ == '__main__':
+    if len(sys.argv) != 3:
+        print('*'*20)
+        print('Incorrect number of arguemenets...')
+        print('Example: python3 labeling.py ./data/file_name.json ./design/')
+        print('*'*20)
+    elif not os.path.exists(sys.argv[-2]):
+        print('File %s does not exist.' % sys.argv[-2])
+    elif not os.path.exists(sys.argv[-1]):
+        print('Folder %s does not exist.' % sys.argv[-1])
+    else:
+        run(1080, 720, sys.argv[-2], sys.argv[-1])
 
