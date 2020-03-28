@@ -4,11 +4,15 @@ import copy
 
 from tkinter import *
 from PIL import ImageTk, Image
+from utils import Utils
 
 
 ALPHABET = 'abcdefghijklmnop'
 NUMBERS = '0123456789'
 isTesting = True
+
+#########################################################
+#########################################################
 
 '''
 Returns true if any text is selected
@@ -66,9 +70,13 @@ def isExampleCompleteChecks(data):
 
     data.isPromptOpen = False
 
+#########################################################
+#########################################################
+
 def init(data):
     data.file_path = './data/design_dz-cleaned.json'
     data.file_path_tagged = './data/design_dz-cleaned-tagged.json'
+    data.u = Utils()
 
     data.new_letters = []
     data.new_images = []
@@ -79,8 +87,8 @@ def init(data):
     data.output = None # json data
     data.i = 0         # index of current example
     data.examples = [] # all valid viewable examples from json data
-
     get_examples(data)
+    data.examples_tagged = []
 
 '''
 Iterates through all of the data and makes a list data.examples of
@@ -90,7 +98,18 @@ def get_examples(data):
     with open(data.file_path) as f:
         data.output = json.loads(json.load(f))
 
-    # TODO: Parse out any examples already tagged
+    if os.path.exists(data.file_path_tagged):
+        with open(data.file_path_tagged) as f:
+            data.examples_tagged = json.loads(json.load(f))
+
+        # Parse out any examples already tagged
+        tagged_examples_titles = set([example['title'] for example in data.examples_tagged])
+        indexs_to_remove = []
+        for index, example in enumerate(data.output):
+            if example['title'] in tagged_examples_titles:
+                indexs_to_remove.append(index)
+        for index in sorted(indexs_to_remove, reverse=True):
+            del my_list[index]
 
     # Iterate through current data.output and make list of new examples
     for example in data.output:
@@ -106,7 +125,20 @@ def save_item(data):
     data.examples[data.i]['image-tags'] = copy.copy(data.new_images)
     data.examples[data.i]['text-tags'] = copy.copy(data.new_letters)
 
-    # TODO: Save json
+    # if the example is already in data.examples_tagged, then update it
+    # otherwise, append it
+    example_titles = [example['title'] for example in data.examples_tagged]
+    current_example_title = data.examples[data.i]['title']
+    if current_example_title in example_titles:
+        i = data.examples_tagged.index(current_example_title)
+        data.examples_tagged[i] = data.examples[data.i]
+    else:
+        data.examples_tagged.append(data.examples[data.i])
+
+    data.u.save_json(data.file_path_tagged, data.examples_tagged)
+
+#########################################################
+#########################################################
 
 def keyPressed(event, data):
     # If an element is already active, remove it by pressing the key again
@@ -156,6 +188,9 @@ def keyPressed(event, data):
             data.new_images = copy.copy(data.examples[data.i]['image-tags'])
             data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
             print(data.new_images)
+
+#########################################################
+#########################################################
 
 def drawImages(canvas, data):
     image_size = len(data.examples[data.i]['images'])
@@ -223,7 +258,6 @@ def redrawAll(canvas, data):
     drawSentences(canvas, data)
     drawDirections(canvas, data)
     drawPrompt(canvas, data)
-
 
 ####################################
 # Unused event functions
