@@ -145,8 +145,31 @@ def save_item(data):
 #########################################################
 
 def keyPressed(event, data):
+    # Revert to a previous item
+    if event.keysym == 'BackSpace':
+        if data.isPromptOpen:
+            data.isPromptOpen = False
+        else:
+            save_item(data)
+            get_prev_item(data)
+            data.new_images = copy.copy(data.examples[data.i]['image-tags'])
+            data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
+
+    # Continue onto a new item
+    elif event.keysym == 'space':
+        isExampleCompleteChecks(data)
+        if data.isPromptOpen == False:
+            save_item(data)
+            get_next_item(data)
+            data.new_images = copy.copy(data.examples[data.i]['image-tags'])
+            data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
+        print("Tagged Examples: ", len(data.examples_tagged))
+
+    if data.isPromptOpen:
+        return
+
     # If an element is already active, remove it by pressing the key again
-    if event.keysym in data.new_letters:
+    elif event.keysym in data.new_letters:
         data.new_letters.remove(event.keysym)
     elif event.keysym in data.new_images:
         data.new_images.remove(event.keysym)
@@ -158,15 +181,6 @@ def keyPressed(event, data):
     elif event.keysym in ALPHABET:
         if ALPHABET.index(event.keysym) < len(data.examples[data.i]['text']):
             data.new_letters.append(event.keysym)
-
-    # Continue onto a new item
-    elif event.keysym == 'space':
-        isExampleCompleteChecks(data)
-        if data.isPromptOpen == False:
-            save_item(data)
-            get_next_item(data)
-            data.new_images = copy.copy(data.examples[data.i]['image-tags'])
-            data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
 
     # Select/ Deselect all images
     elif event.keysym == 'q':
@@ -182,16 +196,7 @@ def keyPressed(event, data):
         else:
             data.new_images = [NUMBERS[i] for i in range(len(data.examples[data.i]['images']))]
 
-    # Revert to a previous item
-    elif event.keysym == 'BackSpace':
-        if data.isPromptOpen:
-            data.isPromptOpen = False
-        else:
-            save_item(data)
-            get_prev_item(data)
-            data.new_images = copy.copy(data.examples[data.i]['image-tags'])
-            data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
-            print(data.new_images)
+
 
 #########################################################
 #########################################################
