@@ -7,6 +7,7 @@ from PIL import ImageTk, Image
 
 ALPHABET = 'abcdefghijklmnop'
 NUMBERS = '0123456789'
+isTesting = True
 
 '''
 Returns true if any text is selected
@@ -19,6 +20,24 @@ Returns true is anyimage is selected
 '''
 def isImageSelected(data):
     return len(data.new_images) != 0
+
+'''
+Sets the index for the next item in the valid examples
+'''
+def get_next_item(data):
+    data.i += 1
+    if data.i == len(data.examples):
+        print('You have seen all of the examples!')
+        exit(0)
+
+'''
+Sets the index to be looking at the previous item
+'''
+def get_prev_item(data):
+    if (data.i == 0):
+        print('You cannot see any previous examples, you are at example 0.')
+    else:
+        data.i -= 1
 
 '''
 Sets data.isPromptOpen and data.prompt for different cases of [space] press
@@ -48,8 +67,7 @@ def isExampleCompleteChecks(data):
 
 def init(data):
     data.file_path = './data/design_dz-cleaned.json'
-    data.titlesSeen = set()
-
+    data.file_path_tagged = './data/design_dz-cleaned-tagged.json'
 
     data.new_letters = []
     data.new_images = []
@@ -57,41 +75,36 @@ def init(data):
     data.isPromptOpen = False
     data.prompt = None
 
-    data.example = None
-    data.output = None
-    get_next_item(data)
+    data.output = None # json data
+    data.i = 0         # index of current example
+    data.examples = [] # all valid viewable examples from json data
 
-def get_next_item(data):
-    # Check if data copy exists, if it does, open it, if it doesn't, make one.
-    if data.output is None:
-        with open(data.file_path) as f:
-            data.output = json.loads(json.load(f))
+    get_examples(data)
 
-    # Iterate through current data.output
-    i = 0
+'''
+Iterates through all of the data and makes a list data.examples of
+all of the valid examples
+'''
+def get_examples(data):
+    with open(data.file_path) as f:
+        data.output = json.loads(json.load(f))
+
+    # TODO: Parse out any examples already tagged
+
+    # Iterate through current data.output and make list of new examples
     for example in data.output:
         # Ignore examples without images/text
         if (len(example['images']) > 0 and len(example['text']) > 0):
-            # Ignore examples already viewed
-            if example['title'] not in data.titlesSeen:
-                # Ignore examples that have too many images/texts
-                if (len(example['text']) <= 16 and len(example['images']) <= len(NUMBERS)):
-                    data.example = example
-                    data.titlesSeen.add(example['title'])
-                    break
-        i += 1
-
-    # TODO: Remove the next i elements from list that we've already viewed.
-
-def mousePressed(event, data):
-    # use event.x and event.y
-    pass
+            # Ignore examples that have too many images/texts
+            if (len(example['text']) <= 16 and len(example['images']) <= len(NUMBERS)):
+                example['image-tags'] = []
+                example['text-tags'] = []
+                data.examples.append(example)
 
 def save_item(data):
     pass
 
 def keyPressed(event, data):
-    print(event.keysym)
     # If an element is already active, remove it by pressing the key again
     if event.keysym in data.new_letters:
         data.new_letters.remove(event.keysym)
@@ -110,6 +123,7 @@ def keyPressed(event, data):
     elif event.keysym == 'space':
         isExampleCompleteChecks(data)
         if data.isPromptOpen == False:
+            data.viewed_previous_examples.append(data.example)
             data.new_images = []
             data.new_letters = []
             get_next_item(data)
@@ -132,13 +146,12 @@ def keyPressed(event, data):
     elif event.keysym == 'BackSpace':
         if data.isPromptOpen:
             data.isPromptOpen = False
+        elif data.isViewingPreviousExample:
+            data.isPromptOpen = True
+            data.prompt = 'You cannot go back.\nYou are already viewing a previous example.'
         else:
-            # TODO: go back
-            print(event.keysym)
-
-def timerFired(data):
-    pass
-
+            data.isViewingPreviousExample = True
+            data.prev_example =
 
 def drawImages(canvas, data):
     image_size = len(data.example['images'])
@@ -206,6 +219,19 @@ def redrawAll(canvas, data):
     drawSentences(canvas, data)
     drawDirections(canvas, data)
     drawPrompt(canvas, data)
+
+
+
+####################################
+# Unused event functions
+####################################
+
+def mousePressed(event, data):
+    # use event.x and event.y
+    pass
+
+def timerFired(data):
+    pass
 
 ####################################
 # use the run function as-is
