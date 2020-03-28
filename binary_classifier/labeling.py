@@ -86,8 +86,8 @@ def init(data):
     data.output = None # json data
     data.i = 0         # index of current example
     data.examples = [] # all valid viewable examples from json data
-    get_examples(data)
     data.examples_tagged = []
+    get_examples(data)
 
 '''
 Iterates through all of the data and makes a list data.examples of
@@ -101,15 +101,6 @@ def get_examples(data):
         with open(data.file_path_tagged) as f:
             data.examples_tagged = json.loads(json.load(f))
 
-        # Parse out any examples already tagged
-        tagged_examples_titles = set([example['title'] for example in data.examples_tagged])
-        indexs_to_remove = []
-        for index, example in enumerate(data.output):
-            if example['title'] in tagged_examples_titles:
-                indexs_to_remove.append(index)
-        for index in sorted(indexs_to_remove, reverse=True):
-            del my_list[index]
-
     # Iterate through current data.output and make list of new examples
     for example in data.output:
         # Ignore examples without images/text
@@ -119,6 +110,20 @@ def get_examples(data):
                 example['image-tags'] = []
                 example['text-tags'] = []
                 data.examples.append(example)
+
+    # Parse out any examples already tagged
+    tagged_examples_titles = set([example['title'] for example in data.examples_tagged])
+    tagged_examples = [example['title'] for example in data.examples_tagged]
+    # indexs_to_remove = []
+    for index, example in enumerate(data.examples):
+        if example['title'] in tagged_examples_titles:
+            tagged_i = tagged_examples.index(example['title'])
+            data.examples[index]['image-tags'] = data.examples_tagged[tagged_i]['image-tags']
+            data.examples[index]['text-tags'] = data.examples_tagged[tagged_i]['text-tags']
+            data.i = index + 1
+            # indexs_to_remove.append(index)
+    # for index in sorted(indexs_to_remove, reverse=True):
+        # del data.output[index]
 
 def save_item(data):
     data.examples[data.i]['image-tags'] = copy.copy(data.new_images)
@@ -233,7 +238,7 @@ def drawDirections(canvas, data):
     canvas.create_text(10, data.height - 80, text=select_text, font="Arial 14", anchor=NW)
 
     # Select all images/ deselect all images
-    select_images = '[w] Select' if not isImageSelected(data) else '[q] Deselect'
+    select_images = '[w] Select' if not isImageSelected(data) else '[w] Deselect'
     select_images += ' all images'
     canvas.create_text(10, data.height - 60, text=select_images, font="Arial 14", anchor=NW)
 
