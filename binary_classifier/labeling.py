@@ -113,36 +113,36 @@ def keyPressed(event, data):
 
     # Add an element to the list of saved items
     elif event.keysym in NUMBERS:
-        if int(event.keysym) < len(data.example['images']):
+        if int(event.keysym) < len(data.examples[data.i]['images']):
             data.new_images.append(event.keysym)
     elif event.keysym in ALPHABET:
-        if ALPHABET.index(event.keysym) < len(data.example['text']):
+        if ALPHABET.index(event.keysym) < len(data.examples[data.i]['text']):
             data.new_letters.append(event.keysym)
 
-    # TODO: Save an item
+    # Continue onto a new item
     elif event.keysym == 'space':
         isExampleCompleteChecks(data)
         if data.isPromptOpen == False:
-            data.viewed_previous_examples.append(data.example)
-            data.new_images = []
-            data.new_letters = []
+            # TODO: Save example
             get_next_item(data)
+            data.new_images = data.examples[data.i]['image-tags']
+            data.new_letters = data.examples[data.i]['text-tags']
 
     # Select/ Deselect all images
     elif event.keysym == 'q':
         if isTextSelected(data):
             data.new_letters = []
         else:
-            data.new_letters = [ALPHABET[i] for i in range(len(data.example['text']))]
+            data.new_letters = [ALPHABET[i] for i in range(len(data.examples[data.i]['text']))]
 
     # Select/ Deselect all images
     elif event.keysym == 'w':
         if isImageSelected(data):
             data.new_images = []
         else:
-            data.new_images = [NUMBERS[i] for i in range(len(data.example['images']))]
+            data.new_images = [NUMBERS[i] for i in range(len(data.examples[data.i]['images']))]
 
-    # TODO: Revert to a previous item
+    # Revert to a previous item
     elif event.keysym == 'BackSpace':
         if data.isPromptOpen:
             data.isPromptOpen = False
@@ -150,16 +150,18 @@ def keyPressed(event, data):
             data.isPromptOpen = True
             data.prompt = 'You cannot go back.\nYou are already viewing a previous example.'
         else:
-            data.isViewingPreviousExample = True
-            data.prev_example =
+            # TODO: Save example
+            get_prev_item(data)
+            data.new_images = data.examples[data.i]['image-tags']
+            data.new_letters = data.examples[data.i]['text-tags']
 
 def drawImages(canvas, data):
-    image_size = len(data.example['images'])
+    image_size = len(data.examples[data.i]['images'])
     base_height = int(data.height / image_size)
     image_left = 3 * data.width // 4 + 20
 
     data.imgs = []
-    for index, image_name in enumerate(data.example['images']):
+    for index, image_name in enumerate(data.examples[data.i]['images']):
         # Get and draw image
         name = './design/' + image_name
         image = Image.open(name)
@@ -176,7 +178,7 @@ def drawImages(canvas, data):
 
 def drawSentences(canvas, data):
     t = ''
-    for index, text in enumerate(data.example['text']):
+    for index, text in enumerate(data.examples[data.i]['text']):
         if ALPHABET[index] in data.new_letters:
             t += 'Active: ' + ALPHABET[index] + '. ' + text + '\n\n'
         else:
@@ -186,7 +188,7 @@ def drawSentences(canvas, data):
 
 def drawDirections(canvas, data):
     # Title
-    title_text = 'Title: ' + data.example['title']
+    title_text = 'Title: ' + data.examples[data.i]['title']
     canvas.create_text(10, data.height - 100, text=title_text, font="Arial 14 italic", anchor=NW)
 
     # Select all text/ deselect all text
