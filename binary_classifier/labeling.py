@@ -129,7 +129,7 @@ def save_item(data):
     example_titles = [example['title'] for example in data.examples_tagged]
     current_example_title = data.examples[data.i]['title']
     if current_example_title in example_titles:
-        i = data.examples_tagged.index(current_example_title)
+        i = example_titles.index(current_example_title)
         data.examples_tagged[i] = data.examples[data.i]
     else:
         data.examples_tagged.append(data.examples[data.i])
@@ -325,7 +325,7 @@ if __name__ == '__main__':
     if len(sys.argv) != 3:
         print('*'*20)
         print('Incorrect number of arguemenets...')
-        print('Example: python3 labeling.py ./data/file_name.json ./design/')
+        print('Example: python3 labeling.py ./data/design_dz-cleaned.json ./design/')
         print('*'*20)
     elif not os.path.exists(sys.argv[-2]):
         print('File %s does not exist.' % sys.argv[-2])
