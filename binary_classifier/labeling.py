@@ -1,5 +1,6 @@
 import json
 import pdb, sys, os, io
+import copy
 
 from tkinter import *
 from PIL import ImageTk, Image
@@ -102,7 +103,10 @@ def get_examples(data):
                 data.examples.append(example)
 
 def save_item(data):
-    pass
+    data.examples[data.i]['image-tags'] = copy.copy(data.new_images)
+    data.examples[data.i]['text-tags'] = copy.copy(data.new_letters)
+
+    # TODO: Save json
 
 def keyPressed(event, data):
     # If an element is already active, remove it by pressing the key again
@@ -123,10 +127,10 @@ def keyPressed(event, data):
     elif event.keysym == 'space':
         isExampleCompleteChecks(data)
         if data.isPromptOpen == False:
-            # TODO: Save example
+            save_item(data)
             get_next_item(data)
-            data.new_images = data.examples[data.i]['image-tags']
-            data.new_letters = data.examples[data.i]['text-tags']
+            data.new_images = copy.copy(data.examples[data.i]['image-tags'])
+            data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
 
     # Select/ Deselect all images
     elif event.keysym == 'q':
@@ -146,14 +150,12 @@ def keyPressed(event, data):
     elif event.keysym == 'BackSpace':
         if data.isPromptOpen:
             data.isPromptOpen = False
-        elif data.isViewingPreviousExample:
-            data.isPromptOpen = True
-            data.prompt = 'You cannot go back.\nYou are already viewing a previous example.'
         else:
-            # TODO: Save example
+            save_item(data)
             get_prev_item(data)
-            data.new_images = data.examples[data.i]['image-tags']
-            data.new_letters = data.examples[data.i]['text-tags']
+            data.new_images = copy.copy(data.examples[data.i]['image-tags'])
+            data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
+            print(data.new_images)
 
 def drawImages(canvas, data):
     image_size = len(data.examples[data.i]['images'])
@@ -173,14 +175,14 @@ def drawImages(canvas, data):
         canvas.create_image(image_left, index*base_height, anchor=NW, image=image)
 
         # Get and draw text
-        text = 'Active: '+str(index) if str(index) in data.new_images else str(index)
+        text = 'ACTIVE: '+str(index) if str(index) in data.new_images else str(index)
         canvas.create_text(image_left - 5, index*base_height + 10, text=text, font="Arial 14", anchor=NE)
 
 def drawSentences(canvas, data):
     t = ''
     for index, text in enumerate(data.examples[data.i]['text']):
         if ALPHABET[index] in data.new_letters:
-            t += 'Active: ' + ALPHABET[index] + '. ' + text + '\n\n'
+            t += 'ACTIVE: ' + ALPHABET[index] + '. ' + text + '\n\n'
         else:
             t += ALPHABET[index] + '. ' + text + '\n\n'
     text_size = '14' if  index <= 10 else '12'
@@ -221,7 +223,6 @@ def redrawAll(canvas, data):
     drawSentences(canvas, data)
     drawDirections(canvas, data)
     drawPrompt(canvas, data)
-
 
 
 ####################################
