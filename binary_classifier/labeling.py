@@ -20,6 +20,8 @@ def init(data):
     get_next_item(data)
 
 def get_next_item(data):
+    # Check if data copy exists, if it does, open it, if it doesn't, make one.
+
     with open(data.file_path) as f:
         output = json.loads(json.load(f))
 
@@ -34,10 +36,6 @@ def get_next_item(data):
             data.titlesSeen.add(example['title'])
 
             break
-            # 1) Write to new seen list
-            # 2) Save sentences and images to new json, with label
-            # u.save_json(new_file_name, data)
-    # load data.xyz as appropriate
 
 def mousePressed(event, data):
     # use event.x and event.y
@@ -61,11 +59,15 @@ def keyPressed(event, data):
         # TODO: Save Item
         data.new_data = []
         get_next_item(data)
+    elif event.keysym == 'backspace':
+        # TODO: Go back to previous item
+        pass
 
 def timerFired(data):
     pass
 
-def redrawAll(canvas, data):
+
+def drawImages(canvas, data):
     image_size = len(data.example['images'])
     base_height = int(data.height / image_size)
 
@@ -86,7 +88,7 @@ def redrawAll(canvas, data):
         else:
             canvas.create_text(720 - 20, index*base_height, text=str(index)+'.', font="Arial 14 bold", anchor=NW)
 
-
+def drawSentences(canvas, data):
     t = ''
     for index, text in enumerate(data.example['text']):
         if alphabet[index] in data.new_data:
@@ -94,8 +96,15 @@ def redrawAll(canvas, data):
         else:
             t += alphabet[index] + '. ' + text + '\n\n'
     text_size = '14' if  index <= 10 else '12'
-    # print(len(t))
     canvas.create_text(10, 10, text=t, font="Arial "+text_size+" bold", anchor=NW, width=data.width // 2)
+
+def drawDirections(canvas, data):
+    pass
+
+def redrawAll(canvas, data):
+    drawImages(canvas, data)
+    drawSentences(canvas, data)
+    drawDirections(canvas, data)
 
 ####################################
 # use the run function as-is
