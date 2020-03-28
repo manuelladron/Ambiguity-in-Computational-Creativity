@@ -18,13 +18,16 @@ class MLStripper(HTMLParser):
         return ''.join(self.fed)
 
 class Utils(object):
-    def __init__(self, file_path):
-        self.stripper = MLStripper()
-        self.json = self.load_json(file_path)
-        self.num_examples = len(self.json)
-        self.data = []
-        self.new_name = self.make_file_name(file_path)
-        self.bar = self.track_progess(self.num_examples)
+    def __init__(self, file_path=None):
+        if file_path is None:
+            pass
+        else:
+            self.stripper = MLStripper()
+            self.json = self.load_json(file_path)
+            self.num_examples = len(self.json)
+            self.data = []
+            self.new_name = self.make_file_name(file_path)
+            self.bar = self.track_progess(self.num_examples)
 
     def run(self):
         raise NotImplementedError
