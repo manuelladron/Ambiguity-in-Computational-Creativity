@@ -111,19 +111,19 @@ def get_examples(data):
                 example['text-tags'] = []
                 data.examples.append(example)
 
-    # Parse out any examples already tagged
+    # 1) Set current example to last tagged example,
+    # 2) Update all examples with their tagging from the last saved file
     tagged_examples_titles = set([example['title'] for example in data.examples_tagged])
     tagged_examples = [example['title'] for example in data.examples_tagged]
-    # indexs_to_remove = []
     for index, example in enumerate(data.examples):
         if example['title'] in tagged_examples_titles:
             tagged_i = tagged_examples.index(example['title'])
-            data.examples[index]['image-tags'] = data.examples_tagged[tagged_i]['image-tags']
-            data.examples[index]['text-tags'] = data.examples_tagged[tagged_i]['text-tags']
-            data.i = index + 1
-            # indexs_to_remove.append(index)
-    # for index in sorted(indexs_to_remove, reverse=True):
-        # del data.output[index]
+            data.examples[index]['image-tags'] = copy.copy(data.examples_tagged[tagged_i]['image-tags'])
+            data.examples[index]['text-tags'] = copy.copy(data.examples_tagged[tagged_i]['text-tags'])
+            data.new_images = copy.copy(data.examples[index]['image-tags'])
+            data.new_letters = copy.copy(data.examples[index]['text-tags'])
+            data.i = index
+
 
 def save_item(data):
     data.examples[data.i]['image-tags'] = copy.copy(data.new_images)
@@ -163,7 +163,7 @@ def keyPressed(event, data):
             get_next_item(data)
             data.new_images = copy.copy(data.examples[data.i]['image-tags'])
             data.new_letters = copy.copy(data.examples[data.i]['text-tags'])
-        print("Tagged Examples: ", len(data.examples_tagged))
+            print("Tagged Examples: ", len(data.examples_tagged))
 
     if data.isPromptOpen:
         return
