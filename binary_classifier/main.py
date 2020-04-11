@@ -58,6 +58,13 @@ def main():
     DEVICE = torch.device("cuda" if cuda else "cpu")
     num_workers = 8 if cuda else 0
 
+    dataset = PreprocessedData(["./data/architecture_dz-cleaned-tagged.json",
+                            "./data/design_dz-cleaned-tagged.json",
+                           "./data/technology_dz-cleaned-tagged.json"],
+                           ["./data/architecture_dz-cleaned.json",
+                            "./data/design_dz-cleaned.json",
+                           "./data/technology_dz-cleaned.json"])
+
     # Hyperparameters
     batch_size_gpu = 64
     batch_size_cpu = 64
@@ -72,18 +79,11 @@ def main():
     nepochs = 20
     lr = 1e-4
 
-    dataset = PreprocessedData(["./data/architecture_dz-cleaned-tagged.json",
-                            "./data/design_dz-cleaned-tagged.json",
-                           "./data/technology_dz-cleaned-tagged.json"],
-                           ["./data/architecture_dz-cleaned.json",
-                            "./data/design_dz-cleaned.json",
-                           "./data/technology_dz-cleaned.json"])
-
     # Training
-    train_loader = getDataLoader(batch_size_gpu, batch_size_cpu, collate,
-                                     num_workers, dataset, cuda, True)
-    dev_loader = getDataLoader(batch_size_gpu, batch_size_cpu, collate,
-                                   num_workers, dataset, cuda, False)
+    train_loader = getDataLoader(batch_size_gpu, batch_size_cpu, num_workers,
+                                 dataset, cuda, True)
+    dev_loader = getDataLoader(batch_size_gpu, batch_size_cpu, num_workers,
+                               dataset, cuda, False)
 
     # Instantiate
     model = classifier(vocab_size, embedding_dim, num_hidden_nodes, num_output_nodes,

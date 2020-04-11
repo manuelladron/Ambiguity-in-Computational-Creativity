@@ -1,4 +1,4 @@
-import json
+import json, os
 import numpy as np
 
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
@@ -175,8 +175,6 @@ class PreprocessedData(object):
         # development
         self.dev_data = data_set[train_len:]
         self.dev_labels = label_set[train_len:]
-
-        return train_set, dev_set, train_labels, dev_labels
 
     def RUN_for_dataset(self):
         train_raw = []

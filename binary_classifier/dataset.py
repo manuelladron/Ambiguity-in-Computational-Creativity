@@ -27,7 +27,7 @@ def collate(seq_list):
 
     return x, lengths, targets
 
-def getDataLoader(batch_size_gpu, batch_size_cpu, collate, num_workers, dataset, cuda, isTrain):
+def getDataLoader(batch_size_gpu, batch_size_cpu, num_workers, dataset, cuda, isTrain):
     if cuda:
         loader_args = dict(shuffle=isTrain, batch_size=batch_size_gpu, num_workers=num_workers,
                            pin_memory=True, collate_fn=collate)
