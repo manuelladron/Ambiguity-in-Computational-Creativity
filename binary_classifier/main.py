@@ -72,15 +72,18 @@ def main():
 
     # Hyperparameters
     batch_size_gpu = 64
-    batch_size_cpu = 32
+    batch_size_cpu = 64
 
     vocab_size = dataset.VOCAB_SIZE
-    num_hidden_nodes = 32
-    embedding_dim = 256
+
+    embedding_dim = 128
+    num_hidden_nodes = 128
     num_output_nodes = 2
+    # max_len = 250
+
     num_layers = 2
     bidirection = True
-    dropout = 0.0
+    dropout = 0.2
     nepochs = 20
     lr = 1e-4
 

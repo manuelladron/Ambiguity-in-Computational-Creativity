@@ -1,17 +1,19 @@
 import torch.nn as nn
-import torch
+import torch, pdb
 
 class classifier(nn.Module):
-
-    #define all the layers used in model
     def __init__(self, vocab_size, embedding_dim, hidden_dim, output_dim, n_layers,
                  bidirectional, dropout):
         super(classifier, self).__init__()
 
-        #embedding layer
+        self.vocab_size = vocab_size
+        self.embedding_dim = embedding_dim
+        self.hidden_dim = hidden_dim
+
+        # Embedding layer
         self.embedding = nn.Embedding(vocab_size, embedding_dim)
 
-        #lstm layer
+        # lstm layer
         self.lstm = nn.LSTM(embedding_dim,
                            hidden_dim,
                            num_layers=n_layers,
@@ -19,34 +21,36 @@ class classifier(nn.Module):
                            dropout=dropout,
                            batch_first=True)
 
-        #dense layer
-        self.fc = nn.Linear(hidden_dim * 2, output_dim)
+        # Linear layer
+        multiplier = 2 if bidirectional else 1
+        input_size = hidden_dim * (n_layers * multiplier)
+        self.fc = nn.Linear(input_size, output_dim)
 
-        #activation function
+        # Activation function
         self.act = nn.Sigmoid()
 
     def forward(self, text, text_lengths):
 
-        #text = [batch size, sent_length]
+        # text = [sent_length, batchsize]
         embedded = self.embedding(text)
-        #embedded = [batch size, sent_len, emb dim] ---> say [2, 305, 100] : 100 dimensions for each of the 305 characters
+        # embedded = [sent_length, batchsize, embeddingsize]
 
         #packed sequence
-        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths, enforce_sorted=False) #, batch_first=True)
+        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths,
+                                                            enforce_sorted=False)
         #packed_embdded = [XXXX, emb dimension]
 
-
         packed_output, (hidden, cell) = self.lstm(packed_embedded)
-        #hidden = [batch size, num layers * num directions, hid dim]
-        #cell = [batch size, num layers * num directions,hid dim]
+        # hidden = [num_layers * num_directions, batch, hidden_size]
 
-        #concat the final forward and backward hidden state
-        hidden = torch.cat((hidden[-2,:,:], hidden[-1,:,:]), dim = 1)
+        # Concat the final forward and backward hidden state
+        hiddens = [hidden[-i, :, :] for i in range(hidden.shape[0])]
+        hidden = torch.cat(hiddens, dim=1)
+        # hidden = [batch size, hid dim * num directions]
 
-        #hidden = [batch size, hid dim * num directions]
-        dense_outputs=self.fc(hidden)
+        dense_outputs = self.fc(hidden)
 
-        #Final activation function
+        # Final activation function
         outputs=self.act(dense_outputs)
 
         return outputs
