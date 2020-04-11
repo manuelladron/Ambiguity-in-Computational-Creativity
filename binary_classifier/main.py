@@ -54,9 +54,11 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     torch.save(model.state_dict(), "./saved_models/v4_{}.pth".format(e))
 
 def main():
-    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
+    cuda = torch.cuda.is_available()
+    DEVICE = torch.device("cuda" if cuda else "cpu")
     num_workers = 8 if cuda else 0
 
+    # Hyperparameters
     batch_size_gpu = 64
     batch_size_cpu = 64
 
@@ -79,9 +81,9 @@ def main():
 
     # Training
     train_loader = getDataLoader(batch_size_gpu, batch_size_cpu, collate,
-                                     num_workers, dataset, isTrain=True)
+                                     num_workers, dataset, cuda, True)
     dev_loader = getDataLoader(batch_size_gpu, batch_size_cpu, collate,
-                                   num_workers, dataset, isTrain=False)
+                                   num_workers, dataset, cuda, False)
 
     # Instantiate
     model = classifier(vocab_size, embedding_dim, num_hidden_nodes, num_output_nodes,
