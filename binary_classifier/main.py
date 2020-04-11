@@ -1,5 +1,5 @@
 import numpy as np
-import time
+import time, os
 import matplotlib.pyplot as plt
 
 import torch
@@ -57,10 +57,6 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     make_graph(epochs, train_losses, test_losses, 'Training loss', 'Testing loss',
                'Training and Testing loss', 'Loss')
 
-    # Save model
-    checkDirectory('./saved_models/')
-    torch.save(model.state_dict(), "./saved_models/v4_%d.pth" % e)
-
 def main():
     num_workers = 8 if CUDA else 0
 
@@ -76,13 +72,13 @@ def main():
     batch_size_cpu = 64
 
     vocab_size = dataset.VOCAB_SIZE
-    embedding_dim = 100
+    embedding_dim = 256
     num_hidden_nodes = 32
     num_output_nodes = 2
     num_layers = 2
     bidirection = True
     dropout = 0.2
-    nepochs = 20
+    nepochs = 50
     lr = 1e-4
 
     # Training
@@ -102,6 +98,12 @@ def main():
 
     # Run training and testing loop
     run(model, optimizer, criterion, train_loader, dev_loader, nepochs)
+
+    # Save model
+    save_dir = './saved_models/'
+    checkDirectory(save_dir)
+    new_name = './saved_models/v5_%d_%d_%d_.pth' % (e, embedding_dim, num_layers)
+    torch.save(model.state_dict(), new_name)
 
 
 if __name__ == '__main__':
