@@ -54,7 +54,7 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     torch.save(model.state_dict(), "./saved_models/v4_{}.pth".format(e))
 
 def main():
-    DEVICE = torch.device("cuda" if cuda else "cpu")
+    DEVICE = torch.device("cuda" if torch.cuda.is_available() else "cpu")
     num_workers = 8 if cuda else 0
 
     batch_size_gpu = 64
