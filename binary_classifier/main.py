@@ -5,7 +5,10 @@ import matplotlib.pyplot as plt
 import torch
 import torch.nn as nn
 import torch.optim as optim
-from torch.utils.data import DataLoader
+
+from preprocessing import PreprocessedData
+from dataset import getDataLoader
+from model import classifier
 
 def make_graph(epochs, train, test, train_name, val_name, name_long, name_short):
     plt.plot(epochs, train, 'g', label=train_name, c="mediumvioletred")
@@ -49,21 +52,6 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
 
     # save model
     torch.save(model.state_dict(), "./saved_models/v4_{}.pth".format(e))
-
-
-def getDataLoader(batch_size_gpu, batch_size_cpu, collate, num_workers, dataset, isTrain):
-    if cuda:
-        loader_args = dict(shuffle=isTrain, batch_size=batch_size_gpu, num_workers=num_workers,
-                           pin_memory=True, collate_fn=collate)
-    else:
-        loader_args =  dict(shuffle=isTrain, batch_size=batch_size_cpu, collate_fn=collate)
-    if isTrain:
-        cur_dataset = TextDataset(dataset.train_data, dataset.train_labels)
-    else:
-        cur_dataset = TextDataset(dataset.test_data, dataset.test_labels)
-    loader = DataLoader(cur_dataset, **loader_args)
-    return loader
-
 
 def main():
     DEVICE = torch.device("cuda" if cuda else "cpu")
