@@ -23,6 +23,10 @@ def make_graph(epochs, train, test, train_name, val_name, name_long, name_short)
     plt.legend()
     plt.show()
 
+def checkDirectory(directory):
+    if not os.path.exists(directory):
+        os.makedirs(directory)
+
 def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     train_losses, train_accs = [], []
     test_losses, test_accs = [] , []
@@ -53,8 +57,9 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     make_graph(epochs, train_losses, test_losses, 'Training loss', 'Testing loss',
                'Training and Testing loss', 'Loss')
 
-    # save model
-    torch.save(model.state_dict(), "./saved_models/v4_{}.pth".format(e))
+    # Save model
+    checkDirectory('./saved_models/')
+    torch.save(model.state_dict(), "./saved_models/v4_%d.pth" % e)
 
 def main():
     num_workers = 8 if CUDA else 0
