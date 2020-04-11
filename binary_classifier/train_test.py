@@ -1,5 +1,6 @@
 import time
 import torch
+import pdb
 
 CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if CUDA else "cpu")
@@ -12,7 +13,6 @@ def binary_accuracy(outs, target):
 
 def train(loader, model, criterion, optimizer):
     # Place model into mode and onto correct device
-    start_time = time.time()
     model.train()
     model.to(DEVICE)
 
@@ -44,8 +44,6 @@ def train(loader, model, criterion, optimizer):
 
     running_loss /= len(loader)
     running_acc /= len(loader)
-    end_time = time.time()
-    print('Time: ',end_time - start_time, 's')
     return running_loss, running_acc
 
 

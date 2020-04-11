@@ -34,6 +34,7 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
 
     for e in range(nepochs):
         print('----- EPOCH %d ------- \n' % e)
+        start_time = time.time()
 
         # Train
         train_loss, train_acc = train(train_loader, model, criterion, optimizer)
@@ -48,8 +49,10 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
         # Epochs
         epochs.append(e)
         if e % 2 == 0 and e != 0:
+            end_time = time.time()
             print('Training Loss: ', train_loss)
             print('Training Accuracy: ', train_acc)
+            print('Time: ',end_time - start_time, 's')
 
     # Make final graphs
     make_graph(epochs, train_accs, test_accs, 'Training Acc', 'Testing Acc',
@@ -69,16 +72,16 @@ def main():
 
     # Hyperparameters
     batch_size_gpu = 64
-    batch_size_cpu = 64
+    batch_size_cpu = 32
 
     vocab_size = dataset.VOCAB_SIZE
-    embedding_dim = 256
     num_hidden_nodes = 32
+    embedding_dim = 256
     num_output_nodes = 2
     num_layers = 2
     bidirection = True
-    dropout = 0.2
-    nepochs = 50
+    dropout = 0.0
+    nepochs = 20
     lr = 1e-4
 
     # Training
@@ -102,7 +105,7 @@ def main():
     # Save model
     save_dir = './saved_models/'
     checkDirectory(save_dir)
-    new_name = './saved_models/v5_%d_%d_%d_.pth' % (e, embedding_dim, num_layers)
+    new_name = './saved_models/v5_%d_%d_%d_.pth' % (nepochs, embedding_dim, num_layers)
     torch.save(model.state_dict(), new_name)
 
 
