@@ -36,6 +36,6 @@ def getDataLoader(batch_size_gpu, batch_size_cpu, num_workers, dataset, cuda, is
     if isTrain:
         cur_dataset = TextDataset(dataset.train_data, dataset.train_labels)
     else:
-        cur_dataset = TextDataset(dataset.test_data, dataset.test_labels)
+        cur_dataset = TextDataset(dataset.dev_data, dataset.dev_labels)
     loader = DataLoader(cur_dataset, **loader_args)
     return loader

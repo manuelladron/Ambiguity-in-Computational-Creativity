@@ -6,7 +6,7 @@ def binary_accuracy(outs, target):
     num_correct = (max_index == target_index).sum().item()
     return num_correct / len(target_index)
 
-def train_lstm(loader, model, criterion, optimizer):
+def train(loader, model, criterion, optimizer):
     # Place model into mode and onto correct device
     start_time = time.time()
     model.train()
@@ -45,7 +45,7 @@ def train_lstm(loader, model, criterion, optimizer):
     return running_loss, running_acc
 
 
-def test_lstm(loader, model, criterion):
+def test(loader, model, criterion):
     with torch.no_grad():
         # Place into eval mode
         model.eval()

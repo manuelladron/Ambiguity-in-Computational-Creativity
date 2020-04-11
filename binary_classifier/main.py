@@ -9,6 +9,7 @@ import torch.optim as optim
 from preprocessing import PreprocessedData
 from dataset import getDataLoader
 from model import classifier
+from train_test import train, test
 
 def make_graph(epochs, train, test, train_name, val_name, name_long, name_short):
     plt.plot(epochs, train, 'g', label=train_name, c="mediumvioletred")
@@ -19,7 +20,6 @@ def make_graph(epochs, train, test, train_name, val_name, name_long, name_short)
     plt.legend()
     plt.show()
 
-
 def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     train_losses, train_accs = [], []
     test_losses, test_accs = [] , []
@@ -29,12 +29,12 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
         print('----- EPOCH %d ------- \n' % e)
 
         # Train
-        train_loss, train_acc = train_lstm(train_loader, model, criterion, optimizer)
+        train_loss, train_acc = train(train_loader, model, criterion, optimizer)
         train_losses.append(train_loss)
         train_accs.append(train_acc)
 
         # Test
-        test_loss, test_acc = test_lstm(dev_loader, model, criterion)
+        test_loss, test_acc = test(dev_loader, model, criterion)
         test_losses.append(test_loss)
         test_accs.append(test_acc)
 
