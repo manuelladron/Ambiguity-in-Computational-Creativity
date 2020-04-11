@@ -11,6 +11,9 @@ from dataset import getDataLoader
 from model import classifier
 from train_test import train, test
 
+CUDA = torch.cuda.is_available()
+DEVICE = torch.device("cuda" if cuda else "cpu")
+
 def make_graph(epochs, train, test, train_name, val_name, name_long, name_short):
     plt.plot(epochs, train, 'g', label=train_name, c="mediumvioletred")
     plt.plot(epochs, test, 'b', label=val_name, c="darkturquoise")
@@ -54,9 +57,7 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     torch.save(model.state_dict(), "./saved_models/v4_{}.pth".format(e))
 
 def main():
-    cuda = torch.cuda.is_available()
-    DEVICE = torch.device("cuda" if cuda else "cpu")
-    num_workers = 8 if cuda else 0
+    num_workers = 8 if CUDA else 0
 
     dataset = PreprocessedData(["./data/architecture_dz-cleaned-tagged.json",
                             "./data/design_dz-cleaned-tagged.json",
@@ -81,9 +82,9 @@ def main():
 
     # Training
     train_loader = getDataLoader(batch_size_gpu, batch_size_cpu, num_workers,
-                                 dataset, cuda, True)
+                                 dataset, CUDA, True)
     dev_loader = getDataLoader(batch_size_gpu, batch_size_cpu, num_workers,
-                               dataset, cuda, False)
+                               dataset, CUDA, False)
 
     # Instantiate
     model = classifier(vocab_size, embedding_dim, num_hidden_nodes, num_output_nodes,

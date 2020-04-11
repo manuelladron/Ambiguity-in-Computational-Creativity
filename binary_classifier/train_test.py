@@ -1,4 +1,5 @@
 import time
+from main import DEVICE
 
 def binary_accuracy(outs, target):
     max_index = outs.max(dim = 1).indices
