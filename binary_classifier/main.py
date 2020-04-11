@@ -12,7 +12,7 @@ from model import classifier
 from train_test import train, test
 
 CUDA = torch.cuda.is_available()
-DEVICE = torch.device("cuda" if cuda else "cpu")
+DEVICE = torch.device("cuda" if CUDA else "cpu")
 
 def make_graph(epochs, train, test, train_name, val_name, name_long, name_short):
     plt.plot(epochs, train, 'g', label=train_name, c="mediumvioletred")

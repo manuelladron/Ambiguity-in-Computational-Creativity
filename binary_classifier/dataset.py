@@ -3,6 +3,9 @@ from torch.utils.data import DataLoader
 from torch.nn.utils.rnn import pad_sequence
 import torch
 
+CUDA = torch.cuda.is_available()
+DEVICE = torch.device("cuda" if CUDA else "cpu")
+
 class TextDataset(Dataset):
     def __init__(self, data, labels):
         self.data = data

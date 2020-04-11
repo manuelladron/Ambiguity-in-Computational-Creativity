@@ -1,5 +1,8 @@
 import time
-from main import DEVICE
+import torch
+
+CUDA = torch.cuda.is_available()
+DEVICE = torch.device("cuda" if CUDA else "cpu")
 
 def binary_accuracy(outs, target):
     max_index = outs.max(dim = 1).indices
