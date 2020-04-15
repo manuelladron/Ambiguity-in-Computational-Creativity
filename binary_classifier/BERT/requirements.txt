@@ -1,0 +1,2 @@
+transformers>=2.8
+tokenizer>=2.0.5
