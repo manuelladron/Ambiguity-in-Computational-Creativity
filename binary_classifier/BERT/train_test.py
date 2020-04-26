@@ -24,10 +24,6 @@ def train(model, loader, optimizer, scheduler):
     model.train()
 
     for step, batch in enumerate(loader):
-
-        if step % 40 == 0 and not step == 0:
-            print('  Batch %d  of  %d.    Elapsed: %.2f seconds' % (step, len(loader), time.time() - start_time))
-
         b_input_ids = batch[0].to(device) # .long()  # batch x seq_length
         b_input_mask = batch[1].to(device) # .float() # batch x seq_length
         b_labels = batch[2].view((batch[2].shape[0]))
@@ -53,8 +49,6 @@ def train(model, loader, optimizer, scheduler):
         optimizer.step()
         scheduler.step()
         
-#     pdb.set_trace()
-
     running_loss /= len(loader)
     running_acc /= len(loader)
 
@@ -75,9 +69,9 @@ def test(model, loader):
         nb_eval_steps = 0
 
         for batch in loader:
-            b_input_ids = batch[0].to(device) # .long()
-            b_input_mask = batch[1].to(device) # .float()
-            b_labels = batch[2].to(device) # .long()
+            b_input_ids = batch[0].to(device) 
+            b_input_mask = batch[1].to(device) 
+            b_labels = batch[2].to(device) 
 
             # The "logits" are the output values prior to applying an activation function like the softmax.
             # https://huggingface.co/transformers/v2.2.0/model_doc/bert.html#transformers.BertForSequenceClassification
@@ -89,8 +83,6 @@ def test(model, loader):
             running_loss += loss.item()
             running_acc += flat_accuracy(logits, b_labels)
             
-#         print(logits)
-
         running_loss /= len(loader)
         running_acc /= len(loader)
 
@@ -98,4 +90,4 @@ def test(model, loader):
         print("  Validation Accuracy: {0:.2f}".format(running_acc))
         print("  Validation took: %.2f seconds" % (time.time() - start_time))
 
-        return running_loss, running_acc
+    return running_loss, running_acc

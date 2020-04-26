@@ -3,13 +3,18 @@ import numpy as np
 import pdb
 import string
 import json
+import spacy
+import pandas as pd
+import numpy as np
 from torch.utils.data import TensorDataset, random_split
 
+nlp = spacy.load('en_core_web_lg')
+    
 ALPHABET = 'abcdefghijklmnopqrstuvwxyz'
 NUMBERS = '0123456789'
 
 class PreprocessedData_wordlevel(object):
-    def __init__(self, train_file_path, test_file_path, tokenizer):
+    def __init__(self, train_file_path, test_file_path, tokenizer, max_sentence_length, eqs):
         """
         train_file_path = list with files
         test_file_path = list with files
@@ -22,6 +27,8 @@ class PreprocessedData_wordlevel(object):
         self.VOCAB = None
         self.VOCAB_SIZE = None
         self.stop_words = self.getStopWords('./data/stopword.list')
+        self.max_sentence_length = max_sentence_length
+        self.eqs = eqs # whether or not +,- has same size
                 
         # Automatically run it when making an instance
         self.RUN_for_dataset()
@@ -70,6 +77,7 @@ class PreprocessedData_wordlevel(object):
     def cleanText(self, cur_text):
         new_list = []
         for sentence in cur_text:
+
             # (1) Make everything lowercase
             new_s = sentence.lower()
 
@@ -83,11 +91,47 @@ class PreprocessedData_wordlevel(object):
             # (4) Remove words: in stop list, that are now len=0, or contain numbers
             new_s = [word for word in list_of_words if word not in self.stop_words and len(word) > 0 and word.isalpha()]
             if len(new_s) == 0:
-                new_list.append('')
+                new_list.append(None)
             else:
                 new_list.append(" ".join(new_s))
-            
+    
         return new_list
+    
+    def getTextValidity(self, positive_tags, negative_tags, text_list):
+        v = [text_list[ALPHABET.index(letter)].lower() for letter in positive_tags if text_list[ALPHABET.index(letter)] != None]
+        n = [ text_list[ALPHABET.index(letter)].lower() for letter in negative_tags if text_list[ALPHABET.index(letter)] != None]
+        return v, n
+
+
+    def getStatistics(self):
+        pos_sens = len(self.pos_sentences)
+        neg_sens = len(self.neg_sentences)
+        l = list(range(0, 256))
+
+        # 1) average len
+        pos = [len(s) for s in self.pos_sentences]
+        avg_pos_sen_len = sum(pos) / pos_sens
+        neg = [len(s) for s in self.neg_sentences]
+        avg_neg_sen_len = sum(neg) / neg_sens
+        
+        print('Avg Positive Sentence Length: %.2f' % avg_pos_sen_len)
+        print('Avg Negative Sentence Length: %.2f' % avg_neg_sen_len)
+#         pd.Series(pos).plot(kind='hist', bins=l).get_figure().savefig("pos.png", dpi=100)
+#         pd.Series(neg).plot(kind='hist', bins=l).get_figure().savefig("pos-neg.png", dpi=100)
+# #         pdb.set_trace()
+        
+        # 2) avg num of adjs
+        pos_adjs = [len([token for token in nlp(s) if token.pos_ == 'ADJ']) for s in self.pos_sentences]
+        avg_pos_adjs = sum(pos_adjs) / pos_sens
+        neg_adjs = [len([token for token in nlp(s) if token.pos_ == 'ADJ']) for s in self.neg_sentences]
+        avg_neg_adjs = sum(neg_adjs) / neg_sens
+        print('Avg Positive Adjectives: %.2f' % avg_pos_adjs)
+        print('Avg Negative Adjectives: %.2f' % avg_neg_adjs)
+        l = list(range(0, 20))
+#         pd.Series(pos_adjs).plot(kind='hist', bins=l).get_figure().savefig("pos_adj.png", dpi=100)
+#         pd.Series(neg_adjs).plot(kind='hist', bins=l).get_figure().savefig("pos-neg_adj.png", dpi=100)
+        pdb.set_trace()
+        
         
     def get_all_text(self, files):
         """
@@ -104,9 +148,8 @@ class PreprocessedData_wordlevel(object):
                 text_list = file[i]['text']
                 negative_tags = self.getNegativeTags(ALPHABET, positive_tags, text_list)
                 text_list = self.cleanText(text_list)
-
-                valid_text = [ text_list[ALPHABET.index(letter)].lower() for letter in positive_tags ]
-                nonvalid_text = [ text_list[ALPHABET.index(letter)].lower() for letter in negative_tags ] 
+                valid_text, nonvalid_text = self.getTextValidity(positive_tags, negative_tags, text_list) 
+                
                 # append sentences and labels
                 for nv_text in nonvalid_text:
                     neg_label = np.array([0])
@@ -117,12 +160,13 @@ class PreprocessedData_wordlevel(object):
                     pos_label = np.array([1])
                     self.pos_sentences.append(v_text)
                     self.pos_sentences_labels.append(pos_label)
-                    
-        min_val = min(len(self.neg_sentences), len(self.pos_sentences))
-        self.neg_sentences = self.neg_sentences[:min_val]
-        self.pos_sentences = self.pos_sentences[:min_val]
-        self.neg_sentences_labels = self.neg_sentences_labels[:min_val]
-        self.pos_sentences_labels = self.pos_sentences_labels[:min_val]
+        
+        if self.eqs:
+            min_val = min(len(self.neg_sentences), len(self.pos_sentences))
+            self.neg_sentences = self.neg_sentences[:min_val]
+            self.pos_sentences = self.pos_sentences[:min_val]
+            self.neg_sentences_labels = self.neg_sentences_labels[:min_val]
+            self.pos_sentences_labels = self.pos_sentences_labels[:min_val]
         
         self.sentences = self.pos_sentences + self.neg_sentences
         self.sentences_labels = self.pos_sentences_labels + self.neg_sentences_labels
@@ -146,23 +190,18 @@ class PreprocessedData_wordlevel(object):
             #   (6) Create attention masks for [PAD] tokens.
             encoded_dict = self.tokenizer.encode_plus(sent,
                                                 add_special_tokens = True, # add [CLS] and [SEP]
-                                                max_length = 64,
+                                                max_length = self.max_sentence_length,
                                                 pad_to_max_length = True,  # pad and truncate
                                                 return_attention_mask = True,
                                                 return_tensors = 'pt'
                                                 )
             self.inputs_ids.append(encoded_dict['input_ids'])
             self.attention_masks.append(encoded_dict['attention_mask'])
-            
-#             print('original: ', sent)
-#             print('token IDs: ', encoded_dict['input_ids'])
 
         # Convert list to tensors
         self.inputs_ids = torch.cat(self.inputs_ids, dim=0)
         self.attention_masks = torch.cat(self.attention_masks, dim=0)
         self.labels = torch.tensor(self.sentences_labels)
-        print(self.labels.shape)
-        print(self.labels.type())
         
     def partition_data(self, train_percentage):
         assert len(self.inputs_ids) == len(self.sentences_labels)
@@ -189,4 +228,4 @@ class PreprocessedData_wordlevel(object):
         self.tokenize_sentences()
         
         # 4) partition data
-        self.partition_data(.6)
+        self.partition_data(.8)
