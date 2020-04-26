@@ -30,16 +30,17 @@ class classifier(nn.Module):
         self.act = nn.Sigmoid()
 
     def forward(self, text, text_lengths):
-
         # text = [sent_length, batchsize]
         embedded = self.embedding(text)
         # embedded = [sent_length, batchsize, embeddingsize]
 
         #packed sequence
-        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths,
-                                                            enforce_sorted=False)
+#         print(embedded, text_lengths)
+        packed_embedded = nn.utils.rnn.pack_padded_sequence(embedded, text_lengths, enforce_sorted=False)
         #packed_embdded = [XXXX, emb dimension]
-
+        
+#         print(packed_embedded)
+#         pdb.set_trace()
         packed_output, (hidden, cell) = self.lstm(packed_embedded)
         # hidden = [num_layers * num_directions, batch, hidden_size]
 
@@ -47,10 +48,9 @@ class classifier(nn.Module):
         hiddens = [hidden[-i, :, :] for i in range(hidden.shape[0])]
         hidden = torch.cat(hiddens, dim=1)
         # hidden = [batch size, hid dim * num directions]
-
         dense_outputs = self.fc(hidden)
 
         # Final activation function
-        outputs=self.act(dense_outputs)
+#         outputs = self.act(dense_outputs)
 
-        return outputs
+        return dense_outputs

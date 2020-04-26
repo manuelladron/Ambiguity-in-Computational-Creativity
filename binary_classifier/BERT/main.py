@@ -32,33 +32,6 @@ cuda = torch.cuda.is_available()
 print(cuda)
 device = torch.device("cuda" if cuda else "cpu")
 torch.cuda.empty_cache()
-def make_graph(epochs, plots, name_long, name_short, save_name):
-    colors = ['darkturquoise', 'mediumvioletred', 'beige', 'brown', 'chartreuse', 'chocolate', 
-              'coral', 'crimson', 'fusia', 'goldenrod', 'green', 'indigo', 'lavender', 'lightgreen', 
-              'orange', 'orchid']
-    print('pp')
-    BCK = (1, 1, 1)
-    fig, ax = plt.subplots(random.randint(0, 10000000))
-    ax.set_facecolor(BCK)
-    print('oo')
-    for idx, p in enumerate(plots):
-        data = p[0]
-        name = p[1]
-        color = colors[idx]
-        ax.plot(epochs, data, label=name, c=color)
-        
-    ax.set_title(name_long)
-    ax.set_xlabel('Epochs')
-    ax.set_ylabel(name_short)
-    ax.legend()
-    print('ii')
-    plt.savefig(save_name, dpi=100)
-    plt.clf()
-    plt.close()
-    plt.cla()
-    print('hh')
-    return
-    
     
 def run_epochs(model, train_dataloader, validation_dataloader, optimizer, scheduler, epochs):
     start_time = time.time()

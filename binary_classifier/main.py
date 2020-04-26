@@ -10,9 +10,11 @@ from preprocessing import PreprocessedData
 from dataset import getDataLoader
 from model import classifier
 from train_test import train, test
+import pickle
 
 CUDA = torch.cuda.is_available()
 DEVICE = torch.device("cuda" if CUDA else "cpu")
+print(CUDA)
 
 def make_graph(epochs, train, test, train_name, val_name, name_long, name_short):
     plt.plot(epochs, train, 'g', label=train_name, c="mediumvioletred")
@@ -26,6 +28,41 @@ def make_graph(epochs, train, test, train_name, val_name, name_long, name_short)
 def checkDirectory(directory):
     if not os.path.exists(directory):
         os.makedirs(directory)
+        
+def makePlotData(ms, train_losses, test_losses, train_accs, test_accs, eq_name, name_starter):
+    plots = []
+    for i in range(len(ms)):
+        data = train_losses[i]
+        name = 'Training, Max Length: %d' % ms[i]
+        plots.append([data, name])
+        data = test_losses[i]
+        name = 'Testing, Max Length: %d' % ms[i]
+        plots.append([data, name])
+    name = './graphs/loss-%s.pkl' % (name_starter)
+    with open(name, 'wb') as f:
+        pickle.dump(plots, f)
+        
+#     with open(name, 'rb') as f:
+#         plots = pickle.load(f)
+#     print(plots)
+
+    plots = []
+    for i in range(len(ms)):
+        data = train_accs[i]
+        name = 'Training, Max Length: %d' % ms[i]
+        plots.append([data, name])
+        data = test_accs[i]
+        name = 'Testing, Max Length: %d' % ms[i]
+        plots.append([data, name])
+    name = './graphs/accs-%s.pkl' % (name_starter)
+    with open(name, 'wb') as f:
+        pickle.dump(plots, f)
+    
+#     with open(name, 'rb') as f:
+#         plots = pickle.load(f)
+#     print(plots)
+    
+#     pdb.set_trace()
 
 def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
     train_losses, train_accs = [], []
@@ -46,71 +83,88 @@ def run(model, optimizer, criterion, train_loader, dev_loader, nepochs):
         test_losses.append(test_loss)
         test_accs.append(test_acc)
 
-        # Epochs
-        epochs.append(e)
-        if e % 2 == 0 and e != 0:
-            end_time = time.time()
-            print('Training Loss: ', train_loss)
-            print('Training Accuracy: ', train_acc)
-            print('Time: ',end_time - start_time, 's')
+    print(train_loss, train_acc, test_loss, test_acc)
+    return train_losses, train_accs, test_losses, test_accs
 
     # Make final graphs
-    make_graph(epochs, train_accs, test_accs, 'Training Acc', 'Testing Acc',
-               'Training and Testing Accuracy', 'Accuracy')
-    make_graph(epochs, train_losses, test_losses, 'Training loss', 'Testing loss',
-               'Training and Testing loss', 'Loss')
+#     make_graph(epochs, train_accs, test_accs, 'Training Acc', 'Testing Acc',
+#                'Training and Testing Accuracy', 'Accuracy')
+#     make_graph(epochs, train_losses, test_losses, 'Training loss', 'Testing loss',
+#                'Training and Testing loss', 'Loss')
 
 def main():
     num_workers = 8 if CUDA else 0
-
-    dataset = PreprocessedData(["./data/architecture_dz-cleaned-tagged.json",
-                            "./data/design_dz-cleaned-tagged.json",
-                           "./data/technology_dz-cleaned-tagged.json"],
-                           ["./data/architecture_dz-cleaned.json",
-                            "./data/design_dz-cleaned.json",
-                           "./data/technology_dz-cleaned.json"])
-
-    # Hyperparameters
-    batch_size_gpu = 64
-    batch_size_cpu = 64
-
-    vocab_size = dataset.VOCAB_SIZE
-
-    embedding_dim = 128
-    num_hidden_nodes = 128
-    num_output_nodes = 2
-    # max_len = 250
-
-    num_layers = 2
-    bidirection = True
-    dropout = 0.2
     nepochs = 20
     lr = 1e-4
-
-    # Training
-    train_loader = getDataLoader(batch_size_gpu, batch_size_cpu, num_workers,
-                                 dataset, CUDA, True)
-    dev_loader = getDataLoader(batch_size_gpu, batch_size_cpu, num_workers,
-                               dataset, CUDA, False)
-
-    # Instantiate
-    model = classifier(vocab_size, embedding_dim, num_hidden_nodes, num_output_nodes,
-                       num_layers, bidirectional=bidirection, dropout=dropout)
-    model.to(DEVICE)
-
+    
     # Criterion & Optimizer
-    criterion = nn.BCELoss()
-    optimizer = optim.Adam(model.parameters(), lr=lr)
+    criterion = nn.CrossEntropyLoss()
+    num_layers = [2, 4, 6]
+    embedding_dims = [128, 256, 512]
+    drop_outs = [.2, .4]
 
     # Run training and testing loop
-    run(model, optimizer, criterion, train_loader, dev_loader, nepochs)
+    batches = [64, 16]
+    max_lengths = [64, 32]
+    equal = [True, False]
+    for eqs in equal:
+        eq_name = 'equal' if eqs else 'unequal'
+        for d in drop_outs:
+            for embedding_dim in embedding_dims:
+                for nLayer in num_layers:
+                    for b in batches:
+                        train_losses = []
+                        train_accs = []
+                        test_losses = []
+                        test_accs = []
+                        ms = []
+                        for m in max_lengths:
+                            max_sentence_length = m
+                            print('Batchsize: %d, %s, Length: %d, nLayers:%d, EmbedDim:%d Dropout:%f' % (b, eq_name, m, nLayer, embedding_dim, d))
+                            dataset = PreprocessedData(["./data/architecture_dz-cleaned-tagged.json",
+                                                        "./data/design_dz-cleaned-tagged.json",
+                                                       "./data/technology_dz-cleaned-tagged.json"],
+                                                       ["./data/architecture_dz-cleaned.json",
+                                                        "./data/design_dz-cleaned.json",
+                                                       "./data/technology_dz-cleaned.json"],
+                                                          max_sentence_length, eqs)
 
-    # Save model
-    save_dir = './saved_models/'
-    checkDirectory(save_dir)
-    new_name = './saved_models/v5_%d_%d_%d_.pth' % (nepochs, embedding_dim, num_layers)
-    torch.save(model.state_dict(), new_name)
+                            # Hyperparameters
+                            batch_size = b
+
+                            vocab_size = dataset.vocab_size
+
+                            num_hidden_nodes = embedding_dim
+                            num_output_nodes = 2
+
+                            bidirection = True
+                            dropout =d
+
+                            train_loader = getDataLoader(batch_size, num_workers, dataset, CUDA, True)
+                            dev_loader = getDataLoader(batch_size, num_workers, dataset, CUDA, False)
+
+                            # Instantiate
+                            model = classifier(vocab_size, embedding_dim, num_hidden_nodes, num_output_nodes,
+                                               nLayer, bidirectional=bidirection, dropout=dropout)
+                            model.to(DEVICE)
+                            optimizer = optim.Adam(model.parameters(), lr=lr)
+
+                            data = run(model, optimizer, criterion, train_loader, dev_loader, nepochs)
+
+                            train_l, train_a, test_l, test_a = data
+                            train_losses.append(train_l)
+                            train_accs.append(train_a)
+                            test_losses.append(test_l)
+                            test_accs.append(test_a)
+                            ms.append(m)
+
+                            del model
+                            torch.cuda.empty_cache()
+
+                        # Make plot data
+                        name_starter = 'Batch:%d-%s-Length:%d-LR:%f-nLayers:%d-EmbedDim:%d-Drop%.2f' % (b, eq_name, m, lr, nLayer, embedding_dim, d)
+                        makePlotData(ms, train_losses, test_losses, train_accs, test_accs, eq_name, name_starter)
 
 
-if __name__ == '__main__':
-    main()
+
+main()
