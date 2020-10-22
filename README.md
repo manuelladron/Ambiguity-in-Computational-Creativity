@@ -16,17 +16,9 @@ One of the main challenges in natural language processing (NLP) is making sense 
 Creative practice (CP) is a broad term that encompasses those fields that produce creative work. Specifically, we refer as CP to any field that relies on visual mediums and feedback in the creative process. This includes work by designers, architects, visual artists or sculptors for example. In these domains, expressive language used to describe, discuss, disseminate and review work is crucial. Yet, it is especially subjective, inherently ambiguous and challenges clear classification with traditional techniques. For example, imagine a designer says to a colleague that they should <em>Design the chair with a more dynamic look</em>; the word <em>dynamic</em> conveys the design intent but it can be embodied in intractable number of representations, that is, forms and design variations. To further illustrate this, Fig. 2 \footnote{Creators (row-wise): <em>SO-IL, Bryanoji Design Studio, Gilles Miller Studio, Igenhoven Architects, Grimshaw Architects, Moarqs, A. Makoto, Gustafson \& Ståhlbom, F. Juhl, C. Kingsnorth, Osko+Deichmann, Dror, P. McDowell, Nike, Campana, Ying Gao, Adidas+A.Taylor, Y. Pardi</em>. Photography (row-wise): <em>I. Baan, E. Wonsek and T. Oji, E. Bruzas, Igenhoven Architects, S. Gil, A. Garcia, L. Coleman, Dezeen, Dezeen, Dezeen, Dezeen, Dezeen, N. Nilsen, Dezeen, Dezeen, Dezeen, Dezeen, E. Phillips.</em> shows images corresponding to the labels, from left to right: <em>interesting, simple, organic, different, iconic, minimalist</em> in the ADARI sub-fields of architecture (top row), furniture (middle row) and fashion (bottom row). This highlights the complex interpretative relationship between descriptions of a workpiece and its form/image. It also leads us the following reserach question: <em>is it possible to achieve a multimodal WSD through translations of ambiguous text to images?</em>
 
 <div  align="center">   
-  <img height="250"   src="./media/figure1_array.pdf">
+  <img height="250"   src="./media/figure1_array.png">
   <p style="font-size:8px"> Rows: architecture (top), furniture (middle), fashion (bottom) sub-domains in ADARI. Columns, from left to right: images with label <em>interesting, simple, organic, different, iconic, minimalist</em>.</p>
 </div>
-
-<object data="http://github.com/manuelladron/Ambiguity-in-Computational-Creativity/media/figure1_array.pdf" type="application/pdf" width="700px" height="200px">
-    <embed src="http://github.com/manuelladron/Ambiguity-in-Computational-Creativity/media/figure1_array.pdf">
-        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://github.com/manuelladron/Ambiguity-in-Computational-Creativity/media/figure1_array.pdf">Download PDF</a>.</p>
-    </embed>
-</object>
-
-
 
 
 This paper introduces an initial dataset, the Ambiguous Descriptions and Art Images (ADARI) dataset of contemporary workpieces, which aims to provide a foundational resource for subjective image description in the context of CP. This has been assembled by collecting articles that include editorial descriptions along with associated images of the creative work. ADARI is an organized dataset of over 240k images and 260k descriptive sentences of visual work provided by the original <em>creators</em> or by <em>curators</em>. Our findings, explained in more detail in section \ref{amb_rel} and summarized in table \ref{ambiguity_analysis}, show that curators use a more objective language in their descriptions, whereas original creators choose a more ambiguous set of adjectives in their language. 
@@ -35,8 +27,8 @@ In addition to the dataset, we provide a baseline for subjective image descripti
 
 
 <div  align="center">   
-  <img height="250"   src="./media/baseline_diagram_d.pdf">
-  <p style="font-size:8px"> Rows: architecture (top), furniture (middle), fashion (bottom) sub-domains in ADARI. Columns, from left to right: images with label <em>interesting, simple, organic, different, iconic, minimalist</em>.</p>
+  <img height="250"   src="./media/baseline_diagram_d.png">
+  <p style="font-size:8px"> Multimodal  WSD  encoder-decoder  baseline  architecture.  The  network  is  divided  into  three  section:  CNN  pretrainedResNet-152 encoder, word embedding encoder, and RNN decoder for multi-label classification.</p>
 </div>
 
 
