@@ -20,6 +20,14 @@ Creative practice (CP) is a broad term that encompasses those fields that produc
   <p style="font-size:8px"> Rows: architecture (top), furniture (middle), fashion (bottom) sub-domains in ADARI. Columns, from left to right: images with label <em>interesting, simple, organic, different, iconic, minimalist</em>.</p>
 </div>
 
+<object data="http://github.com/manuelladron/Ambiguity-in-Computational-Creativity/media/figure1_array.pdf" type="application/pdf" width="700px" height="200px">
+    <embed src="http://github.com/manuelladron/Ambiguity-in-Computational-Creativity/media/figure1_array.pdf">
+        <p>This browser does not support PDFs. Please download the PDF to view it: <a href="http://github.com/manuelladron/Ambiguity-in-Computational-Creativity/media/figure1_array.pdf">Download PDF</a>.</p>
+    </embed>
+</object>
+
+
+
 
 This paper introduces an initial dataset, the Ambiguous Descriptions and Art Images (ADARI) dataset of contemporary workpieces, which aims to provide a foundational resource for subjective image description in the context of CP. This has been assembled by collecting articles that include editorial descriptions along with associated images of the creative work. ADARI is an organized dataset of over 240k images and 260k descriptive sentences of visual work provided by the original <em>creators</em> or by <em>curators</em>. Our findings, explained in more detail in section \ref{amb_rel} and summarized in table \ref{ambiguity_analysis}, show that curators use a more objective language in their descriptions, whereas original creators choose a more ambiguous set of adjectives in their language. 
 
